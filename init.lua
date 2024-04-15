@@ -576,6 +576,8 @@ require('lazy').setup({
 
         tailwindcss = {},
 
+        phpactor = {},
+
         html = {},
 
         cssls = {},
