@@ -34,26 +34,15 @@ return {
         harpoon:list():add()
       end, { desc = 'Add to harpoon' })
 
-      vim.keymap.set('n', '<leader>hl', function()
-        harpoon.ui:toggle_quick_menu(harpoon:list())
-      end, { desc = 'Harpoon list' })
-
       vim.keymap.set('n', '<leader>hc', function()
         harpoon.ui:toggle_quick_menu(harpoon:list():clear())
       end, { desc = 'Harpoon clear' })
 
-      vim.keymap.set('n', '<C-1>', function()
-        harpoon:list():select(1)
-      end, { desc = 'Harpoon to 1' })
-      vim.keymap.set('n', '<C-2>', function()
-        harpoon:list():select(2)
-      end, { desc = 'Harpoon to 2' })
-      vim.keymap.set('n', '<C-3>', function()
-        harpoon:list():select(3)
-      end, { desc = 'Harpoon to 3' })
-      vim.keymap.set('n', '<C-4>', function()
-        harpoon:list():select(4)
-      end, { desc = 'Harpoon to 4' })
+      for i = 0, 9 do
+        vim.keymap.set('n', '<C-' .. i .. '>', function()
+          harpoon:list():select(i)
+        end, { desc = 'Harpoon to ' .. i })
+      end
 
       vim.keymap.set('n', '<A-Up>', function()
         harpoon:list():prev()
@@ -61,6 +50,30 @@ return {
       vim.keymap.set('n', '<A-Down>', function()
         harpoon:list():next()
       end)
+
+      -- basic telescope configuration
+      local conf = require('telescope.config').values
+      local function toggle_telescope(harpoon_files)
+        local file_paths = {}
+        for _, item in ipairs(harpoon_files.items) do
+          table.insert(file_paths, item.value)
+        end
+
+        require('telescope.pickers')
+          .new({}, {
+            prompt_title = 'Harpoon',
+            finder = require('telescope.finders').new_table {
+              results = file_paths,
+            },
+            previewer = conf.file_previewer {},
+            sorter = conf.generic_sorter {},
+          })
+          :find()
+      end
+
+      vim.keymap.set('n', '<leader>hl', function()
+        toggle_telescope(harpoon:list())
+      end, { desc = 'Open harpoon window' })
     end,
   },
 
@@ -113,8 +126,6 @@ return {
 
   {
     'okuuva/auto-save.nvim',
-    cmd = 'ASToggle', -- optional for lazy loading on command
-    event = { 'InsertLeave' }, -- optional for lazy loading on trigger events
     opts = {
       -- your config goes here
       -- or just leave it empty :)
@@ -154,8 +165,15 @@ return {
         -- you can enable a preset for easier configuration
         --
         --
+        cmdline = {
+          enabled = true,
+          view = 'cmdline_popup',
+        },
+
         messages = {
+          enabled = false,
           view = 'mini',
+          view_error = 'mini',
         },
 
         presets = {
@@ -166,6 +184,17 @@ return {
           lsp_doc_border = false, -- add a border to hover docs and signature help
         },
       }
+    end,
+  },
+
+  {
+    'Sonicfury/scretch.nvim',
+    event = 'VeryLazy',
+    config = function()
+      local scretch = require 'scretch'
+
+      vim.keymap.set('n', '<leader>tsc', scretch.new_named, { desc = 'Create Scratch' })
+      vim.keymap.set('n', '<leader>tss', scretch.search, { desc = 'Search Scratch' })
     end,
   },
 }
