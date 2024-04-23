@@ -196,5 +196,15 @@ return {
       vim.keymap.set('n', '<leader>tsc', scretch.new_named, { desc = 'Create Scratch' })
       vim.keymap.set('n', '<leader>tss', scretch.search, { desc = 'Search Scratch' })
     end,
+  }, -- stable version
+  {
+    'OlegGulevskyy/better-ts-errors.nvim',
+    dependencies = { 'MunifTanjim/nui.nvim' },
+    config = {
+      keymaps = {
+        toggle = '<leader>dd', -- default '<leader>dd'
+        go_to_definition = '<leader>dx', -- default '<leader>dx'
+      },
+    },
   },
 }
