@@ -245,31 +245,6 @@ require('lazy').setup({
   --    require('gitsigns').setup({ ... })
   --
   -- See `:help gitsigns` to understand what the configuration keys do
-  { -- Adds git related signs to the gutter, as well as utilities for managing changes
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
-    config = function()
-      local gitsigns = require 'gitsigns'
-
-      gitsigns.setup {}
-
-      vim.keymap.set('n', '<leader>nb', function()
-        gitsigns.blame_line { full = true }
-      end, { desc = 'Blame Line' })
-
-      vim.keymap.set('n', '<leader>nr', gitsigns.reset_hunk, { desc = 'Revert Hunk' })
-
-      vim.keymap.set('n', '<leader>np', gitsigns.preview_hunk, { desc = 'Revert Hunk' })
-    end,
-  },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -285,7 +260,6 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -582,7 +556,7 @@ require('lazy').setup({
 
         tailwindcss = {},
 
-        phpactor = {},
+        intelephense = {},
 
         html = {},
 
@@ -847,7 +821,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'vue', 'javascript', 'typescript', 'css' },
+      ensure_installed = { 'bash', 'c', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'vue', 'javascript', 'typescript', 'css', 'php' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {

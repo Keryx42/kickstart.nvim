@@ -13,11 +13,21 @@ return {
       -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
     },
     keys = {
-      { '<C-n>', '<cmd>Neotree toggle<cr>', desc = 'NeoTree' },
+      { '<C-n>', '<cmd>Neotree toggle reveal<cr>', desc = 'NeoTree' },
     },
     config = function()
       require('neo-tree').setup {
+        enable_git_status = true,
         position = 'float',
+        default_component_configs = {
+          filesystem = {
+            follow_current_file = {
+              enabled = false, -- This will find and focus the file in the active buffer every time
+              --               -- the current file is changed while the tree is open.
+              leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+            },
+          },
+        },
       }
     end,
   },
@@ -126,6 +136,8 @@ return {
 
   {
     'okuuva/auto-save.nvim',
+    cmd = 'ASToggle', -- optional for lazy loading on command
+    event = { 'InsertLeave', 'TextChanged' }, -- optional for lazy loading on trigger events
     opts = {
       -- your config goes here
       -- or just leave it empty :)
@@ -213,6 +225,77 @@ return {
       require('cloak').setup {
         enabled = true,
         cloak_length = 32,
+      }
+    end,
+  },
+  {
+    'utilyre/barbecue.nvim',
+    name = 'barbecue',
+    version = '*',
+    dependencies = {
+      'SmiteshP/nvim-navic',
+      'nvim-tree/nvim-web-devicons', -- optional dependency
+    },
+    opts = {
+      -- configurations go here
+    },
+  },
+  {
+    'lewis6991/gitsigns.nvim',
+    config = function()
+      require('gitsigns').setup {
+        on_attach = function(bufnr)
+          local gitsigns = require 'gitsigns'
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { ']c', bang = true }
+            else
+              gitsigns.nav_hunk 'next'
+            end
+          end)
+
+          map('n', '[c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { '[c', bang = true }
+            else
+              gitsigns.nav_hunk 'prev'
+            end
+          end)
+
+          -- Actions
+          map('n', '<leader>hs', gitsigns.stage_hunk)
+          map('n', '<leader>hr', gitsigns.reset_hunk)
+          map('v', '<leader>hs', function()
+            gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          end)
+          map('v', '<leader>hr', function()
+            gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          end)
+          map('n', '<leader>hS', gitsigns.stage_buffer)
+          map('n', '<leader>hu', gitsigns.undo_stage_hunk)
+          map('n', '<leader>hR', gitsigns.reset_buffer)
+          map('n', '<leader>hp', gitsigns.preview_hunk)
+          map('n', '<leader>hb', function()
+            gitsigns.blame_line { full = true }
+          end)
+          map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
+          map('n', '<leader>hd', gitsigns.diffthis)
+          map('n', '<leader>hD', function()
+            gitsigns.diffthis '~'
+          end)
+          map('n', '<leader>td', gitsigns.toggle_deleted)
+
+          -- Text object
+          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end,
       }
     end,
   },
