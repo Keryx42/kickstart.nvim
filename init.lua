@@ -1,5 +1,5 @@
 --[[
-
+ndiu
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
 =====================================================================
@@ -18,7 +18,7 @@
 ========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
 ========                                                     ========
 =====================================================================
-=====================================================================
+================================================    =====================
 
 What is Kickstart?
 
@@ -355,18 +355,34 @@ require('lazy').setup({
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
 
-      -- See `:help telescope.builtin`
+      local function get_visual_selection()
+        local s_start = vim.fn.getpos "'<"
+        local s_end = vim.fn.getpos "'>"
+        local n_lines = math.abs(s_end[2] - s_start[2]) + 1
+        local lines = vim.api.nvim_buf_get_lines(0, s_start[2] - 1, s_end[2], false)
+        lines[1] = string.sub(lines[1], s_start[3], -1)
+        if n_lines == 1 then
+          lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3] - s_start[3] + 1)
+        else
+          lines[n_lines] = string.sub(lines[n_lines], 1, s_end[3])
+        end
+        return table.concat(lines, '\n')
+      end
+
       local builtin = require 'telescope.builtin'
+
+      vim.api.nvim_set_keymap('v', '<C-f>', 'y<ESC>:Telescope grep_string search=<c-r>0<CR>', { noremap = true, silent = true }) -- See `:help telescope.builtin`
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader><leader>', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('v', '<leader><leader>', builtin.lsp_references, { desc = 'Search Highlight' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>b', builtin.buffers, { desc = '[S] existing [B]uffers' })
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
@@ -527,6 +543,12 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      --
+      --
+
+      -- local mason_registry = require('mason-registry')
+      -- local vue_language_server_path = mason_registry.get_package('vue-language-server'):get_install_path() .. '/node_modules/@vue/language-server'
+      local vue_language_server_path = '/Users/florian.koenig/.local/share/nvim/mason/packages/vue-language-server/node_modules/@vue/language-server'
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -540,19 +562,20 @@ require('lazy').setup({
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
         --
-        volar = {
-          filetypes = {
-            'vue',
-            'typescript',
-            'javascript',
-            'json',
-          },
+        tsserver = {
           init_options = {
-            vue = {
-              hybridMode = false,
+            plugins = {
+              {
+                name = '@vue/typescript-plugin',
+                location = vue_language_server_path,
+                languages = { 'vue' },
+              },
             },
           },
+          filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
         },
+
+        volar = {},
 
         tailwindcss = {},
 
@@ -711,13 +734,13 @@ require('lazy').setup({
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<C-n>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-p>'] = cmp.mapping.select_prev_item(),
 
           -- Scroll the documentation window [b]ack / [f]orward
-          ['<C-S-Tab>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-Tab>'] = cmp.mapping.scroll_docs(4),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
 
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
@@ -727,7 +750,7 @@ require('lazy').setup({
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
-          ['<C-Space>'] = cmp.mapping.complete {},
+          -- ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
